@@ -1,0 +1,41 @@
+{
+  "Africa": [
+    {"city": "Cairo", "lat": 30.06263, "lon": 31.24967},
+    {"city": "Kinshasa", "lat": -4.32758, "lon": 15.31357},
+    {"city": "Luanda", "lat": -8.83682, "lon": 13.23432},
+    {"city": "Nairobi", "lat": -1.28333, "lon": 36.81667}
+  ],
+  "Antarctica": [
+    {"city": "McMurdo Station", "lat": -77.846, "lon": 166.676}
+  ],
+  "Asia": [
+    {"city": "Karachi", "lat": 24.9056, "lon": 67.0822},
+    {"city": "Dhaka", "lat": 23.7104, "lon": 90.40744},
+    {"city": "Delhi", "lat": 28.65195, "lon": 77.23149},
+    {"city": "Mumbai", "lat": 19.07283, "lon": 72.88261}
+  ],
+  "Australia": [
+    {"city": "Sydney", "lat": -33.86785, "lon": 151.20732},
+    {"city": "Melbourne", "lat": -37.814, "lon": 144.96332},
+    {"city": "Brisbane", "lat": -27.46794, "lon": 153.02809},
+    {"city": "Perth", "lat": -41.57231, "lon": 147.17096}
+  ],
+  "Europe": [
+    {"city": "Moscow", "lat": 55.75222, "lon": 37.61556},
+    {"city": "Paris", "lat": 48.85341, "lon": 2.3488},
+    {"city": "London", "lat": 51.50853, "lon": -0.12574},
+    {"city": "Madrid", "lat": 40.4165, "lon": -3.70256}
+  ],
+  "North America": [
+    {"city": "Mexico City", "lat": 19.42847, "lon": -99.12766},
+    {"city": "New York City", "lat": 40.71427, "lon": -74.00597},
+    {"city": "Los Angeles", "lat": 34.05223, "lon": -118.24368},
+    {"city": "Chicago", "lat": 41.85003, "lon": -87.65005}
+  ],
+  "South America": [
+    {"city": "Rio de Janeiro", "lat": -22.90278, "lon": -43.2075},
+    {"city": "Santiago", "lat": -29.19167, "lon": -54.86722},
+    {"city": "Quito", "lat": -0.22985, "lon": -78.52495},
+    {"city": "Cali", "lat": 3.43722, "lon": -76.5225}
+  ]
+}

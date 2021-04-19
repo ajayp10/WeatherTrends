@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Trends in Weather</title>
+        <!-- For fonts-->
+        <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+
+        <link href="./static/css/styles.css" rel="stylesheet" />
+        <!-- Maps-->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <style>
+            .input-group {
+              display: flex;
+              justify-content: center;
+              padding: 0.5rem;
+              background-color: #fff;
+            }
+
+            .continent-label {
+              margin-top: 5px;
+              font-size: 20px;
+              font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+              font-weight: 700;
+            }
+
+            .btn-link {
+              font-size: 10px;
+              font-weight: 700;
+              color: #000000;
+            }
+
+            .city {
+              font-size: 16px;
+              font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+              font-weight: 700;
+            }
+
+            #mapid {
+              height: 600px;
+              width: 80%;
+              margin: auto;
+            }
+        </style>
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand js-scroll-trigger" href="#page-top">Trends in Weather </a>
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars ml-1"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav text-uppercase ml-auto">
+                        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container">
+                <div class="masthead-subheading">Learn about trends in weather. Compare between cities from each continent.</div>
+                <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="#portfolio">Start</a>
+            </div>
+        </header>
+        <!-- Portfolio Grid-->
+        <section class="page-section bg-light" id="portfolio">
+            <form action="/" method="POST" enctype="multipart/form-data">
+                <div class="container">
+                    <div class="text-center">
+                        <h2 class="section-heading">Select cities</h2>
+                    </div>
+
+                    <div class="container">
+                        <!-- Africa-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>Africa</label>
+                                    </div>
+
+                                    <button type="button" id="add-africa" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-africa" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="africa-city">
+                                        <select class="custom-select city" id="africa-city" name="africa-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if af %}
+                                                {% for city in af %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Antarctica-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>Antarctica</label>
+                                    </div>
+
+                                    <button type="button" id="add-antarctica" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-antarctica" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="antarctica-city">
+                                        <select class="custom-select city" id="antarctica-city" name="antarctica-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if an %}
+                                                {% for city in an %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Asia-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>Asia</label>
+                                    </div>
+
+                                    <button type="button" id="add-asia" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-asia" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="asia-city">
+                                        <select class="custom-select city" id="asia-city" name="asia-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if aa %}
+                                                {% for city in aa %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Australia-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>Australia</label>
+                                    </div>
+
+                                    <button type="button" id="add-australia" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-australia" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="australia-city">
+                                        <select class="custom-select city" id="australia-city" name="australia-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if au %}
+                                                {% for city in au %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Europe-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>Europe</label>
+                                    </div>
+
+                                    <button type="button" id="add-europe" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-europe" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="europe-city">
+                                        <select class="custom-select city" id="europe-city" name="europe-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if eu %}
+                                                {% for city in eu %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- North America-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>North America</label>
+                                    </div>
+
+                                    <button type="button" id="add-namerica" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-namerica" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="namerica-city">
+                                        <select class="custom-select city" id="namerica-city" name="namerica-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if na %}
+                                                {% for city in na %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- South America-->
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-3">
+                                    <div class="continent-label" style="display:inline-block;">
+                                        <label>South America</label>
+                                    </div>
+
+                                    <button type="button" id="add-samerica" class="btn btn-link" onclick="addCity(this)" style="display:inline-block;"><span class="fa fa-plus"></span></button>
+                                    <button type="button" id="rem-samerica" class="btn btn-link" onclick="removeCity(this)" style="display:inline-block;"><span class="fa fa-minus"></span></button>
+                                 </div>
+
+                                <div class="col-9">
+                                    <div class="samerica-city">
+                                        <select class="custom-select city" id="samerica-city" name="samerica-city" style="width: 200px;">
+                                            <option selected value="City">City</option>
+                                            {% if af %}
+                                                {% for city in af %}
+                                                <option value="{{city}}">{{city}}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <label class="continent-label" for="from">From</label>
+                                        &nbsp;&nbsp;&nbsp;
+                                        <input class="form-control" type="date" value="2020-12-01" id="from" name="from">
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <label class="continent-label" for="to">To</label>
+                                        &nbsp;&nbsp;&nbsp;
+                                        <input class="form-control" type="date" value="2021-02-01" id="to" name="to">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <button type="submit" class="btn btn-primary" value="Submit">Submit</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </form>
+        </section>
+        <div id="mapid">
+
+        </div>
+
+        <!-- Contact-->
+        <section class="page-section" id="contact">
+            <div class="container">
+                <div class="text-center">
+                    <h2 class="section-heading text-uppercase">Contact Us</h2>
+                    <h3 class="section-subheading text-muted">Use the form below for queries</h3>
+                </div>
+                <form id="contactForm" name="sentMessage" novalidate="novalidate">
+                    <div class="row align-items-stretch mb-5">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <input class="form-control" id="name" type="text" placeholder="Your Name *" required="required" data-validation-required-message="Please enter your name." />
+                                <p class="help-block text-danger"></p>
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control" id="email" type="email" placeholder="Your Email *" required="required" data-validation-required-message="Please enter your email address." />
+                                <p class="help-block text-danger"></p>
+                            </div>
+                            <div class="form-group mb-md-0">
+                                <input class="form-control" id="phone" type="tel" placeholder="Your Phone *" required="required" data-validation-required-message="Please enter your phone number." />
+                                <p class="help-block text-danger"></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group form-group-textarea mb-md-0">
+                                <textarea class="form-control" id="message" placeholder="Your Message *" required="required" data-validation-required-message="Please enter a message."></textarea>
+                                <p class="help-block text-danger"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div id="success"></div>
+                        <button class="btn btn-primary btn-xl text-uppercase" id="sendMessageButton" type="submit">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="footer py-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-4 text-lg-left">Copyright © 2021</div>
+                    <div class="col-lg-4 my-3 my-lg-0">
+                        <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-twitter"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-dark btn-social mx-2" href="#!"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                    <div class="col-lg-4 text-lg-right">
+                        <a class="mr-3" href="#!">Privacy Policy</a>
+                        <a href="#!">Terms of Use</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Third party plugin JS-->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="./static/js/scripts.js"></script>
+        <script>
+            var map = L.map('mapid').setView([0,0],2);
+
+            L.tileLayer('https://api.maptiler.com/maps/voyager/{z}/{x}/{y}.png?key=Fiy1qOzS7uJwg51rlqtO', {
+                attribution: '<a href="https://carto.com/" target="_blank">&copy; CARTO</a> <a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+                noWrap: true,
+                minZoom: 2,
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+            }).addTo(map);
+
+            {% if result %}
+                {% for city in result %}
+
+                    var circle1 = L.circle([{{result[city]["lat"]}},{{result[city]["lon"]}}], {
+                        color: 'black',
+                        fillColor: '#f03',
+                        radius: 500
+                    }).addTo(map);
+
+                    var circle2 = L.circle([{{result[city]["lat"]}},{{result[city]["lon"]}}], {
+                        color: '{{result[city]["color"]}}',
+                        fillColor: '{{result[city]["color"]}}',
+                        fillOpacity: 0.5,
+                        radius: {{result[city]["size"]}}
+                    }).addTo(map);
+
+                    circle2.bindPopup("Low: {{result[city]["min_temp"]}} C, {{result[city]["lmin_temp"]}}:00 - {{result[city]["hmin_temp"]}}:00 <br> High: {{result[city]["max_temp"]}} C, {{result[city]["lmax_temp"]}}:00 - {{result[city]["hmax_temp"]}}:00 ");
+
+                {% endfor %}
+            {% endif %}
+
+            var countDict = {
+                africa:0,
+                antarctica:0,
+                asia:0,
+                australia:0,
+                europe:0,
+                namerica:0,
+                samerica:0
+            };
+
+            function addCity(e) {
+                elem = e.id
+                city = elem.substr(elem.indexOf('-')+1)
+
+                if (countDict[city] < 3) {
+                    $('#' + city + '-city').clone().appendTo('.' + city + '-city')
+                    countDict[city] = countDict[city] + 1
+                }
+            }
+
+            function removeCity(e){
+                elem = e.id
+                city = elem.substr(elem.indexOf('-')+1)
+
+                if (countDict[city] >= 0) {
+                    $('#'+ city + '-city').last().remove();
+                    countDict[city] = countDict[city] - 1
+                }
+            }
+        </script>
+    </body>
+</html>
