@@ -1,8 +1,9 @@
 import psycopg2
-from .data_collection import store_to_db
+# from .data_collection import store_to_db
 import numpy as np
 import math
 from sklearn.cluster import KMeans
+import pandas as pd
 
 def process_cities(cities, from_date, to_date, db_name, db_password, db_user, db_host):
     """
@@ -39,7 +40,7 @@ def process_cities(cities, from_date, to_date, db_name, db_password, db_user, db
             result[city]["lat"] = lat
             result[city]["lon"] = lon
 
-            store_to_db(lat, lon, from_date, to_date, db_name, db_password, db_user, db_host)
+            # store_to_db(lat, lon, from_date, to_date, db_name, db_password, db_user, db_host)
 
         conn.commit()
         conn.close()
@@ -74,8 +75,8 @@ def find_size(resultDict, db_name, db_password, db_user, db_host):
         cur = conn.cursor()
 
         for city in resultDict:
-            # query = """ SELECT AVG (mean_temp)::NUMERIC(8,5) FROM weather WHERE lat = %s and lon = %s """
-            query = """ SELECT AVG (mean_temp)::NUMERIC(8,5) FROM test_weather WHERE lat = %s and lon = %s """
+            query = """ SELECT AVG (mean_temp)::NUMERIC(8,5) FROM weather WHERE lat = %s and lon = %s """
+            # query = """ SELECT AVG (mean_temp)::NUMERIC(8,5) FROM test_weather WHERE lat = %s and lon = %s """
             record = (resultDict[city]["lat"], resultDict[city]["lon"])
             cur.execute(query, record)
 
@@ -144,8 +145,8 @@ def find_timings(resultDictSizeCluster, db_name, db_password, db_user, db_host):
         cur = conn.cursor()
 
         for city in resultDictSizeCluster:
-            # query = """ SELECT min_temp, min_temp_time FROM weather WHERE lat = %s AND lon = %s AND min_temp IN (SELECT MIN(min_temp) FROM weather WHERE lat = %s AND lon = %s) """
-            query = """ SELECT min_temp, min_temp_time FROM test_weather WHERE lat = %s AND lon = %s AND min_temp IN (SELECT MIN(min_temp) FROM test_weather WHERE lat = %s AND lon = %s) """
+            query = """ SELECT min_temp, min_temp_time FROM weather WHERE lat = %s AND lon = %s AND min_temp IN (SELECT MIN(min_temp) FROM weather WHERE lat = %s AND lon = %s) """
+            # query = """ SELECT min_temp, min_temp_time FROM test_weather WHERE lat = %s AND lon = %s AND min_temp IN (SELECT MIN(min_temp) FROM test_weather WHERE lat = %s AND lon = %s) """
             record = (resultDictSizeCluster[city]["lat"], resultDictSizeCluster[city]["lon"], resultDictSizeCluster[city]["lat"], resultDictSizeCluster[city]["lon"])
             cur.execute(query, record)
 
@@ -164,8 +165,8 @@ def find_timings(resultDictSizeCluster, db_name, db_password, db_user, db_host):
             resultDictSizeCluster[city]["hmin_temp"] = temp_time.max()
 
         for city in resultDictSizeCluster:
-            # query = """ SELECT max_temp, max_temp_time FROM weather WHERE lat = %s AND lon = %s AND max_temp IN (SELECT MAX(max_temp) FROM weather WHERE lat = %s AND lon = %s) """
-            query = """ SELECT max_temp, max_temp_time FROM test_weather WHERE lat = %s AND lon = %s AND max_temp IN (SELECT MAX(max_temp) FROM test_weather WHERE lat = %s AND lon = %s) """
+            query = """ SELECT max_temp, max_temp_time FROM weather WHERE lat = %s AND lon = %s AND max_temp IN (SELECT MAX(max_temp) FROM weather WHERE lat = %s AND lon = %s) """
+            # query = """ SELECT max_temp, max_temp_time FROM test_weather WHERE lat = %s AND lon = %s AND max_temp IN (SELECT MAX(max_temp) FROM test_weather WHERE lat = %s AND lon = %s) """
             record = (resultDictSizeCluster[city]["lat"], resultDictSizeCluster[city]["lon"], resultDictSizeCluster[city]["lat"], resultDictSizeCluster[city]["lon"])
             cur.execute(query, record)
 
@@ -197,6 +198,67 @@ def find_timings(resultDictSizeCluster, db_name, db_password, db_user, db_host):
             conn.close()
 
 
+def find_temp_alt_correlation(resultDictSizeClusterTime, db_name, db_password, db_user, db_host):
+    """
+    For each city, find its altitude class and capture its correlation with average fluctuation in temperature for that
+    altitude class.
+
+    :param resultDictSizeClusterTime: dictionary with cities as key and sub dictionary as values
+    :param db_name: database name
+    :param db_password: database password
+    :param db_user: database username
+    :param db_host: database host
+    :return: resultDictSizeClusterTime: dictionary with cities as key and sub dictionary as values which contain
+    attribute "index" that capture correlation between altitude and fluctuation in temperatures
+    """
+    try:
+        conn = psycopg2.connect(dbname=db_name, password=db_password, user=db_user, host=db_host)
+        cur = conn.cursor()
+
+        query = """ SELECT lat, lon, STDDEV(mean_temp), alt from weather GROUP BY lat, lon, alt """
+        cur.execute(query)
+
+        result = cur.fetchall()
+
+        data_df = pd.DataFrame(np.array([row for row in result]), columns=["lat", "lon", "stddev_temp", "alt"])
+        kmeans = KMeans(5).fit(data_df["alt"].values.reshape(-1, 1))
+
+        data_df["alt_class"] = kmeans.labels_
+
+
+        for city in resultDictSizeClusterTime:
+            query = """ SELECT STDDEV(mean_temp), alt FROM weather GROUP BY lat, lon, alt HAVING lat = %s and lon = %s"""
+            record = (resultDictSizeClusterTime[city]["lat"], resultDictSizeClusterTime[city]["lon"])
+            cur.execute(query, record)
+
+            result = cur.fetchone()
+            temp_variation, altitude = float(result[0]), float(result[1])
+            altitude_class = kmeans.predict([[altitude]])[0]
+
+            temp_variation_altcls = data_df[data_df["alt_class"] == altitude_class]["stddev_temp"].mean()
+
+            if temp_variation > temp_variation_altcls:
+                resultDictSizeClusterTime[city]["index"] = round(temp_variation/temp_variation_altcls, 2)
+
+            elif temp_variation < temp_variation_altcls:
+                resultDictSizeClusterTime[city]["index"] = round(temp_variation / temp_variation_altcls, 2)
+
+            else:
+                resultDictSizeClusterTime[city]["index"] = round(temp_variation / temp_variation_altcls, 2)
+
+        conn.close()
+
+        return resultDictSizeClusterTime
+
+    except Exception as e:
+        print("Exiting find_timings due to exception: ", e.__class__)
+
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+
 def normalise_values(items):
     """
     Normalise values in <items> to a scale of 10.
@@ -216,34 +278,3 @@ def normalise_values(items):
     result = [math.floor(value) for value in res]
 
     return result
-
-
-if __name__ == "__main__":
-    sample_input = ["Cairo, Egypt",
-                    "Kinshasa, Democratic Republic of the Congo",
-                    "Luanda, Angola",
-                    "Nairobi, Kenya",
-                    "McMurdo Station",
-                    "Karachi, Pakistan",
-                    "Dhaka, Bangladesh",
-                    "Delhi, India",
-                    "Mumbai, India",
-                    "Sydney, Australia",
-                    "Melbourne, Australia",
-                    "Brisbane, Australia",
-                    "Perth, Australia",
-                    "Moscow, Russia",
-                    "Paris, France",
-                    "London, United Kingdom",
-                    "Madrid, Spain",
-                    "Mexico City, Mexico",
-                    "New York City, United States",
-                    "Los Angeles, United States",
-                    "Chicago, United States",
-                    "Rio de Janeiro, Brazil",
-                    "Santiago, Brazil",
-                    "Quito, Ecuador",
-                    "Cali, Colombia"
-                    ]
-
-    find_size(process_cities(sample_input, '', ''))

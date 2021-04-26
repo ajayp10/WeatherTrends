@@ -17,6 +17,10 @@
         <!-- Maps-->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+        <!-- Maps Legend-->
+        <link rel="stylesheet" href="./static/css/leaflet.legend.css" />
+        <script type="text/javascript" src="./static/js/leaflet.legend.js"></script>
         <style>
             .input-group {
               display: flex;
@@ -398,9 +402,34 @@
                         radius: {{result[city]["size"]}}
                     }).addTo(map);
 
-                    circle2.bindPopup("Low: {{result[city]["min_temp"]}} C, {{result[city]["lmin_temp"]}}:00 - {{result[city]["hmin_temp"]}}:00 <br> High: {{result[city]["max_temp"]}} C, {{result[city]["lmax_temp"]}}:00 - {{result[city]["hmax_temp"]}}:00 ");
+                    circle2.bindPopup("<b>{{city}}</b> <br> Low: {{result[city]["min_temp"]}} °C, {{result[city]["lmin_temp"]}}:00 - {{result[city]["hmin_temp"]}}:00 hrs <br> High: {{result[city]["max_temp"]}} °C, {{result[city]["lmax_temp"]}}:00 - {{result[city]["hmax_temp"]}}:00 hrs <br> Altitude T.F.I: {{result[city]["index"]}}");
 
                 {% endfor %}
+
+            L.control.Legend({
+                position: "bottomright",
+                title: "Temperature Fluctuation Index",
+                symbolWidth: 10,
+                collapsed: true,
+                legends: [{
+                    label: "> 1 - High temperature fluctuations",
+                    type: "polyline",
+                    color: "#ffffff",
+                    weight: 1,
+                    opacity: 1,
+                }, {
+                    label: "< 1 - Less temperature fluctuations",
+                    type: "polyline",
+                    color: "#ffffff",
+                    weight: 1,
+                }, {
+                    label: "= 1 - Very less temperature fluctuations",
+                    type: "polyline",
+                    color: "#ffffff",
+                    weight: 1,
+                }]
+            }).addTo(map);
+
             {% endif %}
 
             var countDict = {
